@@ -1,67 +1,35 @@
-//@see http://mongoosejs.com/docs/documents.html
+const express = require('express');
+const bodyParser = require('body-parser');
 
-var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost:27017/TodoApp');
-mongoose.Promise = global.Promise;
+const {
+  mongoose
+} = require('./db/mongoose');
+const {
+  Todo
+} = require('./models/todo');
+const {
+  User
+} = require('./models/user');
 
+const app = express();
 
-//@see http://mongoosejs.com/docs/validation.html
-const Todo = mongoose.model('Todo', {
-  text: {
-    type: String,
-    required: true,
-    minLength: 1,
-    trim: true
-  },
-  completed: {
-    type: Boolean,
-    default: false
-  },
-  completedAt: {
-    type: Number,
-    default: null
-  }
+app.use(bodyParser.json());
+
+// POST TODOS
+app.post('/todos', (req, res) => {
+  let todo = new Todo({
+    text: req.body.text
+  });
+  todo.save().then((doc) => {
+    res.send(doc);
+  }, (e) => {
+    res.status(400).send(e);
+  });
 });
 
-// User model
-// email
-// - Require it
-// - Trim it
-// - Set min length to 1
-// - Validation for email
-const User = mongoose.model('User', {
-  email: {
-    type: String,
-    require: true,
-    trim: true,
-    minLength: 1
-  }
-});
+//  @see https://stackoverflow.com/questions/14322989/first-heroku-deploy-failed-error-code-h10
+app.listen(process.env.PORT || 3000, function () {
+  console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
+})
 
-// var newTodo = new Todo({
-//   text: 'Cooked dinner',
-//   completed: false
-// });
-
-// newTodo.save().then((doc) => {
-//   console.log('Saved newTodo');
-//   console.log(JSON.stringify(doc, undefined, 2))
-// }, (e) => {
-//   console.log('Unable to save todo.');
-// });
-
-
-// var otherNewTodo = new Todo({
-//   text: 'Read a book'
-// });
-
-var NewUser = new User({
-  email: 'JimBob@example.com'
-});
-
-NewUser.save().then((doc) => {
-  console.log('Saved NewUser');
-  console.log(JSON.stringify(doc, undefined, 2))
-}, (e) => {
-  console.log('Unable to save todo.');
-});
+module.exports.app = app;
