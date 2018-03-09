@@ -27,9 +27,22 @@ app.post('/todos', (req, res) => {
   });
 });
 
+// GET TODOS
+app.get('/todos', (req, res) => {
+  Todo.find().then((todos) => {
+    res.send({
+      todos
+    });
+  }, (e) => {
+    res.status(400).send(e);
+  });
+});
+
 //  @see https://stackoverflow.com/questions/14322989/first-heroku-deploy-failed-error-code-h10
 app.listen(process.env.PORT || 3000, function () {
   console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
 })
 
-module.exports = { app };
+module.exports = {
+  app
+};
