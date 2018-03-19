@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
 
@@ -87,6 +88,40 @@ app.delete('/todos/:id', (req, res) => {
   });
 });
 
+// PATCH
+app.patch('/todos/:id', (req, res) => {
+  let id = req.params.id;
+  let body = _.pick(req.body, ['text', 'completed']);
+
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+
+  if (_.isBoolean(body.completed) && body.completed) {
+    body.completedAt = new Date().getTime();
+  } else {
+    body.completed = false;
+    body.completedAt = null;
+  }
+
+  Todo.findByIdAndUpdate(id, {
+      $set: body
+    }, {
+      new: true
+    })
+    .then((todo) => {
+      if (!todo) {
+        return res.status(404).send();
+      }
+
+      res.send({
+        todo
+      });
+
+    }).catch((e) => {
+      return res.status(404).send();
+    });
+});
 
 //  @see https://stackoverflow.com/questions/14322989/first-heroku-deploy-failed-error-code-h10
 app.listen(process.env.PORT || 3000, function () {
